@@ -1,6 +1,10 @@
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.UnknownHostException;
 
 import javax.swing.JButton;
@@ -11,6 +15,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import com.sun.jdi.event.Event;
+
 public class ChatClient extends JFrame
 {
 	String loginName;
@@ -20,6 +26,9 @@ public class ChatClient extends JFrame
     
     JButton send;
     JButton logout;
+    
+    DataInputStream in;
+    DataOutputStream out;
     
 	public ChatClient(String loginName) throws UnknownHostException,IOException
 	{
@@ -40,6 +49,48 @@ public class ChatClient extends JFrame
 		
 		send = new JButton("Send");
 		logout = new JButton("Logout");
+		
+		send.addActionListener(event -> {
+			
+			try
+			{
+				if(sendMessage.getText().length() > 0)
+				{
+					out.writeUTF(loginName + "DATA" + sendMessage.getText());
+				}
+				
+				sendMessage.setText("");
+			} 
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		});
+		
+		logout.addActionListener(Event -> {
+
+			try
+			{
+				if(sendMessage.getText().length() > 0)
+				{
+					out.writeUTF(loginName + "LogOut");
+				}
+
+				System.exit(1);
+			} 
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		});
+		
+		Socket socket = new Socket("127.0.0.1",5217);
+		
+		in= new DataInputStream(socket.getInputStream());
+		out= new DataOutputStream(socket.getOutputStream());
+		
+		out.writeUTF(loginName);
+		
 		
 		setUp();
 	}
