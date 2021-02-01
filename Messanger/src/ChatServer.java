@@ -31,6 +31,9 @@ public class ChatServer
 		DataInputStream in;
 		DataOutputStream out;
 		
+		int position = 0;
+		int i = 0;
+		
 		Client(Socket client) throws IOException
 		{
 			clientSocket = client;
@@ -38,7 +41,7 @@ public class ChatServer
 			out= new DataOutputStream(clientSocket.getOutputStream());
 			
 			String loginName = in.readUTF();
-			System.out.println("Login Name" + loginName);
+			System.out.println("Login Name: " + loginName);
 			
 			loginNames.add(loginName);
 			clientSockets.add(clientSocket);
@@ -66,7 +69,7 @@ public class ChatServer
 					{
 						messageBuffer.append(" "+ msgParts.nextToken());
 					}
-					String message = messageBuffer.toString();
+					final String message = messageBuffer.toString();
 					
 					switch(msgType)
 					{
@@ -74,8 +77,32 @@ public class ChatServer
 					   clientSockets.forEach(socket -> {
 						   notifyLogin(socket, name);
 					   });
+					   
+					   break;
+					   case "LOGOUT":
+						   
+					   clientSockets.forEach(socket -> {
+						   if (name.equals(loginNames.get(i++)))
+							position=i-1;
+						
+						   performLogout(socket,name);
+					   });
+					   
+					   loginNames.remove(position);
+					   clientSockets.remove(position);
+					   break;
+					   
+					 default:
+						 clientSockets.forEach(socket -> {
+							 notifyMessage(socket,name,message);
+						 });
 					
 					}
+					
+					if (msgType.equals("LOGOUT"))
+					
+						break;
+					
 					
 					
 					
@@ -87,6 +114,42 @@ public class ChatServer
 			}
 		}
 		
+	}
+	public static void main(String[] args) throws IOException
+	{
+		new ChatServer();
+	}
+
+	
+	public void performLogout(Socket socket, String name)
+	{
+		try
+		{
+			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+			out.writeUTF(name + " has logout!");
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		
+	}
+
+
+	public void notifyMessage(Socket socket, String name, String message)
+	{
+		try
+		{
+			DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+			out.writeUTF(name + " :" + message);
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
 	public void notifyLogin(Socket socket,String name)
 	{
 		try
@@ -98,12 +161,6 @@ public class ChatServer
 		{
 			e.printStackTrace();
 		}
-	}
-		
-	}
-	public static void main(String[] args) throws IOException
-	{
-		new ChatServer();
 	}
 
 }

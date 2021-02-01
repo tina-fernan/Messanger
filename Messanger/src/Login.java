@@ -62,17 +62,17 @@ public class Login
 			@Override
 			public void keyReleased(KeyEvent e)
 			{
-				if (e.getKeyCode() == KeyEvent.VK_ENTER)
-				{
-					startChat(login, loginName.getText());
-				}
+				
 				
 			}
 			
 			@Override
 			public void keyPressed(KeyEvent e)
 			{
-				// TODO Auto-generated method stub
+				if (e.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					startChat(login, loginName.getText());
+				}
 				
 			}
 		});

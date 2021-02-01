@@ -1,3 +1,5 @@
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.DataInputStream;
@@ -30,6 +32,38 @@ public class ChatClient extends JFrame implements Runnable
     DataInputStream in;
     DataOutputStream out;
     
+    private void logout()
+    {
+    	try
+		{
+			out.writeUTF(loginName + " LOGOUT");
+			
+		} 
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+    	System.exit(1);
+    }
+    
+    public void send()
+    {
+    	try
+		{
+			if(sendMessage.getText().length() > 0)
+			{
+				out.writeUTF(loginName + " DATA " + sendMessage.getText());
+			}
+			
+			sendMessage.setText("");
+		} 
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+    	
+    }
+    
 	public ChatClient(String loginName) throws UnknownHostException,IOException
 	{
 		super(loginName);
@@ -39,7 +73,7 @@ public class ChatClient extends JFrame implements Runnable
 		{
 			public void windowClosing(WindowEvent e)
 			{
-				
+				logout();
 			}
 		});
 		
@@ -47,41 +81,46 @@ public class ChatClient extends JFrame implements Runnable
 		messages.setEditable(false);
 		sendMessage = new JTextField(50);
 		
+		sendMessage.addKeyListener(new KeyListener()
+		{
+			
+			@Override
+			public void keyTyped(KeyEvent e)
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e)
+			{
+				
+				
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e)
+			{
+				if (e.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					send();
+				}
+				
+			}
+		});
+		
 		send = new JButton("Send");
 		logout = new JButton("Logout");
 		
 		send.addActionListener(event -> {
 			
-			try
-			{
-				if(sendMessage.getText().length() > 0)
-				{
-					out.writeUTF(loginName + "DATA" + sendMessage.getText());
-				}
-				
-				sendMessage.setText("");
-			} 
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+			send();
 		});
 		
 		logout.addActionListener(Event -> {
-
-			try
-			{
-				if(sendMessage.getText().length() > 0)
-				{
-					out.writeUTF(loginName + "LogOut");
-				}
-
-				System.exit(1);
-			} 
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+ 
+			logout();
+		
 		});
 		
 		Socket socket = new Socket("127.0.0.1",5217);
@@ -98,7 +137,7 @@ public class ChatClient extends JFrame implements Runnable
 	
 	private void setUp()
 	{
-		setSize(600,400);
+		setSize(550,400);
 		JPanel panel = new JPanel();
 		
 		panel.add(new JScrollPane(messages));
@@ -117,13 +156,13 @@ public class ChatClient extends JFrame implements Runnable
 	@Override
 	public void run()
 	{
-	 while (true)
+	 while(true)
 	{
 		 try
 		{
 			 messages.append("\n" + in.readUTF());
 			
-		} catch (Exception e)
+		} catch(IOException e)
 		{
 			e.printStackTrace();
 		}
