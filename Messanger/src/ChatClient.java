@@ -17,7 +17,7 @@ import javax.swing.JTextField;
 
 import com.sun.jdi.event.Event;
 
-public class ChatClient extends JFrame
+public class ChatClient extends JFrame implements Runnable
 {
 	String loginName;
 	
@@ -90,6 +90,7 @@ public class ChatClient extends JFrame
 		out= new DataOutputStream(socket.getOutputStream());
 		
 		out.writeUTF(loginName);
+		out.writeUTF(loginName + " LOGIN");
 		
 		
 		setUp();
@@ -104,9 +105,30 @@ public class ChatClient extends JFrame
 		panel.add(sendMessage);
 		panel.add(send);
 		panel.add(logout);
+		
+		
 		add(panel);
+		new Thread(this).start();
 		
 		setVisible(true);
+		
+	}
+
+	@Override
+	public void run()
+	{
+	 while (true)
+	{
+		 try
+		{
+			 messages.append("\n" + in.readUTF());
+			
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+	}
 		
 	}
 
